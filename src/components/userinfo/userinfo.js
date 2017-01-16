@@ -8,7 +8,7 @@ const UserInfo = ({ userinfo }) => (
     <h1 className='username'>
       <a href={`https://github.com/${userinfo.nickname}`}>
         {userinfo.username}
-      S</a>
+      </a>
     </h1>
 
     <ul className='repos-info'>
