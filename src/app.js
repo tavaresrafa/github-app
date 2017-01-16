@@ -24,8 +24,10 @@ class App extends Component {
     const value = e.target.value
     const keyCode = e.which || e.keyCode
     const ENTER = 13
+    const target = e.target
 
     if (keyCode === ENTER) {
+      target.disabled = true
       ajax().get(this.getGitHubApiUrl(value))
       .then((result) => {
         this.setState({
@@ -41,6 +43,10 @@ class App extends Component {
           starred: []
         })
       })
+      .always(() => {
+        target.disabled = false
+        target.value = ''
+      })
     }
   }
 
@@ -49,7 +55,7 @@ class App extends Component {
     ajax().get(this.getGitHubApiUrl(username, type))
     .then((result) => {
       this.setState({
-        [type]: result.map((repo) => ({
+        [type]: result.map(repo => ({
           name: repo.name,
           link: repo.html_url
         }))
