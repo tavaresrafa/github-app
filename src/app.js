@@ -1,29 +1,60 @@
 'use strict'
 
 import React, { Component } from 'react'
+import ajax from '@fdaciuk/ajax'
 import AppContent from './components/appcontent/appcontent'
 
 class App extends Component {
   constructor () {
     super()
     this.state = {
-      userinfo: {
-        photo: 'https://avatars.githubusercontent.com/u/9735792?v=3',
-        username: 'Rafael Tavares',
-        nickname: 'tavaresrafa',
-        repos: 12,
-        followers: 10,
-        following: 10
-      },
-      repos: [{
-        name: 'Repo',
-        link: '#'
-      }],
-      starred: [{
-        name: 'Repo',
-        link: '#'
-      }]
+      userinfo: null,
+      repos: [],
+      starred: []
     }
+  }
+
+  getGitHubApiUrl (username, type) {
+    const internalUser = username ? `/${username}` : ''
+    const internalType = type ? `/${type}` : ''
+    return `https://api.github.com/users${internalUser}${internalType}`
+  }
+
+  handleSearch (e) {
+    const value = e.target.value
+    const keyCode = e.which || e.keyCode
+    const ENTER = 13
+
+    if (keyCode === ENTER) {
+      ajax().get(this.getGitHubApiUrl(value))
+      .then((result) => {
+        this.setState({
+          userinfo: {
+            username: result.name,
+            photo: result.avatar_url,
+            nickname: result.login,
+            repos: result.public_repos,
+            followers: result.followers,
+            following: result.following
+          },
+          repos: [],
+          starred: []
+        })
+      })
+    }
+  }
+
+  getRepos (type) {
+    const username = this.state.userinfo.nickname
+    ajax().get(this.getGitHubApiUrl(username, type))
+    .then((result) => {
+      this.setState({
+        [type]: result.map((repo) => ({
+          name: repo.name,
+          link: repo.html_url
+        }))
+      })
+    })
   }
 
   render () {
@@ -31,6 +62,9 @@ class App extends Component {
       userinfo={this.state.userinfo}
       repos={this.state.repos}
       starred={this.state.starred}
+      handleSearch={(e) => this.handleSearch(e)}
+      getRepos={() => this.getRepos('repos')}
+      getStarred={() => this.getRepos('starred')}
      />
   }
 }
