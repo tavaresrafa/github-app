@@ -10,7 +10,8 @@ class App extends Component {
     this.state = {
       userinfo: null,
       repos: [],
-      starred: []
+      starred: [],
+      isFetching: false
     }
   }
 
@@ -21,11 +22,15 @@ class App extends Component {
   }
 
   handleSearch (e) {
-    const value = e.target.value
+    let value = e.target.value
     const keyCode = e.which || e.keyCode
     const ENTER = 13
 
     if (keyCode === ENTER) {
+      this.setState({
+        userinfo: null,
+        isFetching: true
+      })
       ajax().get(this.getGitHubApiUrl(value))
       .then((result) => {
         this.setState({
@@ -41,6 +46,12 @@ class App extends Component {
           starred: []
         })
       })
+      .always(() => {
+        this.setState({
+          isFetching: false
+        })
+      }
+    )
     }
   }
 
@@ -49,7 +60,7 @@ class App extends Component {
     ajax().get(this.getGitHubApiUrl(username, type))
     .then((result) => {
       this.setState({
-        [type]: result.map((repo) => ({
+        [type]: result.map(repo => ({
           name: repo.name,
           link: repo.html_url
         }))
@@ -62,6 +73,7 @@ class App extends Component {
       userinfo={this.state.userinfo}
       repos={this.state.repos}
       starred={this.state.starred}
+      isFetching={this.state.isFetching}
       handleSearch={(e) => this.handleSearch(e)}
       getRepos={() => this.getRepos('repos')}
       getStarred={() => this.getRepos('starred')}
